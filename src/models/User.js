@@ -15,6 +15,11 @@ class User extends Model {
             freezeTableName: true
         })
     }
+
+    static associate(models){
+        this.hasMany(models.Posts, { foreignKey: 'user_id', as: 'posts' });
+        this.belongsToMany(models.Posts, { foreignKey: 'user_id', through: 'Curtidas_User_Post', as: 'postCurtida' });
+    }
 }
 
 module.exports = User;
