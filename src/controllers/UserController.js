@@ -20,6 +20,16 @@ module.exports = {
     async updateUser (req, res) {
         const { nome, dataNasc, email, senha } = req.body;
 
-        
+        if(!senha){
+            
+        }
+
+        const user = await User.update({
+            nome : nome,
+            email: email,
+            senha: senha,
+            nascimento: dataNasc
+        })
+
     },
 };
