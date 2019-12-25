@@ -2,6 +2,7 @@ const Post = require('../models/Posts');
 const User = require('../models/User');
 const PostsComplete = require('../models/PostsComplete');
 const sequelize = require('sequelize');
+const PostLikeUser = require('../models/PostsLikeUser');
 
 
 module.exports = {
@@ -64,18 +65,17 @@ module.exports = {
         const user = await User.findByPk(user_id);
         if(!user) return res.status(400).json({ error: 'Usuario nao encontrado!'});
 
-        // await Post.findByPk(post_id).then( async data => {
-            
-        // });
-
-        await Post.update(
-            { curtidas: sequelize.literal('curtidas + 1') },
-            { where: { id: post_id }}
-        ).then(async data => {
-            console.log(data);
+        await Post.update({ 
+            curtidas: sequelize.literal('curtidas + 1') 
+        },{ 
+            where: { id: post_id },
         });
 
-        return res.json({ sucess: true });
-    },
+        await PostLikeUser.create({
+            post_id,
+            user_id
+        });
 
+        return res.json({ sucess: "Like inserido com sucesso!" });
+    },
 };

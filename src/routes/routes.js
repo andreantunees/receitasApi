@@ -13,7 +13,7 @@ routes.get('/users', UserController.index);
 //posts
 routes.post('/users/:user_id/posts', PostsController.store);
 routes.get('/users/:user_id/posts/:post_id', PostsController.index);
-routes.put('/users/:user_id/posts/like', PostsController.like);
+routes.post('/users/:user_id/posts/like', PostsController.like);
 
 //ingredientes
 routes.post('/ingredientes/cadastro', IngredientesController.store);

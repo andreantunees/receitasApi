@@ -15,5 +15,11 @@ module.exports = {
         const user = await User.create({ nome, email });
 
         return res.json(user);
-    }  
+    },
+
+    async updateUser (req, res) {
+        const { nome, dataNasc, email, senha } = req.body;
+
+        
+    },
 };
