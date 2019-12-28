@@ -65,6 +65,9 @@ module.exports = {
         const user = await User.findByPk(user_id);
         if(!user) return res.status(400).json({ error: 'Usuario nao encontrado!'});
 
+        const likeExists = await PostLikeUser.findOne({ where: { user_id, post_id }});
+        if(likeExists) return res.status(400).json({ error: 'Like ja inserido.'})
+
         await Post.update({ 
             curtidas: sequelize.literal('curtidas + 1') 
         },{ 
@@ -77,5 +80,20 @@ module.exports = {
         });
 
         return res.json({ sucess: "Like inserido com sucesso!" });
+    },
+
+    async indexByLike (req, res) {
+        const { user_id } = req.params;
+
+        // const post = await PostLikeUser.find({ where: { user_id }}, {
+        //     // attributes: ['titulo', 'preparo', 'curtidas', 'user_id'],
+        //     include: {
+        //         attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
+        //     },
+        // });
+
+        const post = await PostLikeUser.findAll();
+
+        return res.json(post);
     },
 };
