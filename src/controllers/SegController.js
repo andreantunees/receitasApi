@@ -51,4 +51,8 @@ module.exports = {
             res.status(400).send(err);
         }
     },
+
+    async logout (req, res) {
+        // const 
+    },
 };

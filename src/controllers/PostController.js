@@ -6,6 +6,7 @@ const PostLikeUser = require('../models/PostsLikeUser');
 
 
 module.exports = {
+
     async store(req, res) {
         try{
             const { user_id } = req.params;
@@ -46,12 +47,11 @@ module.exports = {
 
         const { post_id } = req.params;
 
-        const post = await Post.findByPk(post_id, {
-            attributes: ['titulo', 'preparo', 'curtidas', 'user_id'],
-            include: {
-                association : 'postsComplete',
-                attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
-            },
+        const post = await PostsComplete.findAll({
+            attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
+            where: {
+                post_id
+            }
         });
 
         return res.json(post);
@@ -83,16 +83,64 @@ module.exports = {
     },
 
     async indexByLike (req, res) {
-        const { user_id } = req.params;
+        const { user_id, page } = req.params;
 
-        // const post = await PostLikeUser.find({ where: { user_id }}, {
-        //     // attributes: ['titulo', 'preparo', 'curtidas', 'user_id'],
-        //     include: {
-        //         attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
+        const pageSize = process.env.LIMIT_PAGE;
+
+        const offset = page * pageSize;
+        const limit = pageSize;
+
+        const post = await PostLikeUser.findAll({
+            limit,
+            offset,
+            attributes: ['post_id','createdAt'],
+            where: {
+                user_id
+            },
+            include: [{
+                association : 'post',
+                attributes: ['titulo','preparo','curtidas','createdAt'],
+                include: [{
+                    association: 'owner',
+                    attributes: ['nome','sobrenome'],
+                }]
+            }]
+        });
+
+        return res.json(post);
+    },
+
+    async remove (req, res){
+        // const { user_id } = req.params;
+        // const { post_id } = req.body;
+
+        
+    },
+
+    async indexList (req, res){
+        //listar post de acordo com os ingredientes/medida/quantidade
+
+        const { user_id, page } = req.params;
+
+        const offset = page * pageSize;
+        const limit = pageSize;
+
+        // const post = await PostLikeUser.findAll({
+        //     limit,
+        //     offset,
+        //     attributes: ['post_id','createdAt'],
+        //     where: {
+        //         user_id
         //     },
+        //     include: [{
+        //         association : 'post',
+        //         attributes: ['titulo','preparo','curtidas','createdAt'],
+        //         include: [{
+        //             association: 'owner',
+        //             attributes: ['nome','sobrenome'],
+        //         }]
+        //     }]
         // });
-
-        const post = await PostLikeUser.findAll();
 
         return res.json(post);
     },
