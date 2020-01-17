@@ -18,6 +18,7 @@ class User extends Model {
 
     static associate(models){
         this.hasMany(models.Posts, { foreignKey: 'user_id', as: 'posts' });
+        this.hasMany(models.BlackList, { foreignKey: 'user_id', as: 'tokens' });
         this.belongsToMany(models.Posts, { foreignKey: 'user_id', through: 'Curtidas_User_Post', as: 'postCurtida' });
     }
 }

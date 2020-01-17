@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi');
 const User = require('../../models/User');
+const BlackList = require('../../models/BlackList');
 
 module.exports = {
 
@@ -17,7 +18,10 @@ module.exports = {
 
     async existsUser (data) {
         return await User.findOne({ 
-            where: { email: data.email, registro: true }
+            where: { 
+                email: data.email,
+                registro: true 
+            }
         });
     },
 
@@ -34,7 +38,24 @@ module.exports = {
         return await User.findOne({
             where: {
                 id,
-                status: Online
+                status: Online,
+                registro: true
+            }
+        });
+    },
+
+    async invalidationToken(id, token){
+        return await BlackList.create({
+            token,
+            user_id: id
+        });
+    },
+
+    async checkTokenBlackList(token){
+        return await BlackList.findOne({
+            where: {
+                token, 
+                registro: true
             }
         });
     },

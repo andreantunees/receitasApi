@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-const { registerValidation, loginValidation, existsUser } = require('./validations/seg');
+const { registerValidation, loginValidation, existsUser, invalidationToken } = require('./validations/seg');
 const { generateCrypt, compareCrypt} = require('../helpers/crypt');
 
 module.exports = {
@@ -66,6 +66,8 @@ module.exports = {
         
             const userId = req.idUser;
 
+            await invalidationToken(req.idUser, req.to);
+
             await User.update({
                 status: 'Offline'
             },{
@@ -77,5 +79,5 @@ module.exports = {
         }catch(err){
             res.status(400).send(err);
         }
-    },
+    }
 };
