@@ -20,16 +20,19 @@ module.exports = {
     async updateUser (req, res) {
         const { nome, dataNasc, email, senha } = req.body;
 
+        const hashPassword = null;
+
         if(!senha){
-            
+            hashPassword = await generateCrypt(req.body.senha);
         }
 
         const user = await User.update({
             nome : nome,
             email: email,
-            senha: senha,
+            senha: hashPassword,
             nascimento: dataNasc
-        })
+        });
 
+        return res.json(user);
     },
 };

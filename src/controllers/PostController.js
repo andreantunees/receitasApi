@@ -13,7 +13,7 @@ module.exports = {
             const {  titulo, preparo, ingredients } = req.body;
     
             const user = await User.findByPk(user_id);
-            if(!user) return res.status(400).json({ error: 'Usuario nao encontrado!'});
+            if(!user) return res.status(400).json({ message: 'Usuario nao encontrado!'});
     
             const post = await Post.create({
                 titulo,
@@ -36,10 +36,10 @@ module.exports = {
                 });
             });
     
-            return res.json({ sucess : "Post inserido com sucesso!" });
+            return res.json({ message : "Post inserido com sucesso!" });
 
         }catch(err){
-            return res.status(400).json({ error : "Ocorreu erro inexperado!"})
+            return res.status(400).json({ message : "Ocorreu erro inexperado!"})
         } 
     },
 
@@ -63,10 +63,10 @@ module.exports = {
         const { post_id } = req.body;
 
         const user = await User.findByPk(user_id);
-        if(!user) return res.status(400).json({ error: 'Usuario nao encontrado!'});
+        if(!user) return res.status(400).json({ message: 'Usuario nao encontrado!'});
 
         const likeExists = await PostLikeUser.findOne({ where: { user_id, post_id }});
-        if(likeExists) return res.status(400).json({ error: 'Like ja inserido.'})
+        if(likeExists) return res.status(400).json({ message: 'Like ja inserido.'})
 
         await Post.update({ 
             curtidas: sequelize.literal('curtidas + 1') 

@@ -30,4 +30,12 @@ module.exports = {
         return schema.validate(data);
     },
 
+    async userOnlineByPk (id){
+        return await User.findOne({
+            where: {
+                id,
+                status: Online
+            }
+        });
+    },
 }
