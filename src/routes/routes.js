@@ -16,13 +16,17 @@ routes.post('/login', SegController.login);
 routes.post('/logout', auth, SegController.logout);
 
 //users
-routes.get('/users', auth,UserController.index);
+routes.get('/users', auth, UserController.index);
+routes.put('/users/senha', auth, UserController.updateUserSenha);
+routes.put('/users/geral', auth, UserController.updateUser);
 
 //posts
-routes.post('/users/posts', auth, PostsController.store);
-routes.get('/users/posts/:post_id', auth, PostsController.index);
-routes.get('/users/posts/like/history/:page', auth, PostsController.indexByLike);
-routes.post('/users/posts/like', auth, PostsController.like);
+routes.post('/posts', auth, PostsController.store);
+routes.get('/posts/:post_id', auth, PostsController.index);
+routes.get('/posts/like/history/:page', auth, PostsController.indexByLike);
+routes.put('/posts/delete/:post_id', auth, PostsController.remove);
+routes.post('/posts/like', auth, PostsController.like);
+routes.post('/posts/check/:page', auth, PostsController.indexList);
 
 //ingredientes
 routes.post('/ingredientes/cadastro', auth, IngredientesController.store);

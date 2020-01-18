@@ -38,7 +38,7 @@ module.exports = {
         return await User.findOne({
             where: {
                 id,
-                status: Online,
+                status: 'Online',
                 registro: true
             }
         });

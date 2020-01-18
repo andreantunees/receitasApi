@@ -3,7 +3,7 @@ const User = require('../models/User');
 const PostsComplete = require('../models/PostsComplete');
 const sequelize = require('sequelize');
 const PostLikeUser = require('../models/PostsLikeUser');
-const SearchPost = require('../models/SearchPost;')
+const SearchPost = require('../models/SearchPost');
 
 module.exports = {
 
@@ -128,7 +128,7 @@ module.exports = {
     async remove (req, res){
         try{
 
-            const { post_id } = req.body;
+            const { post_id } = req.params;
 
             await Post.update({ 
                 registro: false 
@@ -149,33 +149,26 @@ module.exports = {
 
     async indexList (req, res){
         try{
-            //listar post de acordo com os ingredientes/medida/quantidade -- inserir na tabela de consulta
+            //listar post de acordo com os ingredientes/medida/quantidade -- 
 
             const { page } = req.params;
+
+            const { search } = req.body;
 
             const offset = page * pageSize;
             const limit = pageSize;
 
-            // const post = await PostsComplete.findAll({
-            //     limit,
-            //     offset,
-            //     attributes: ['post_id','createdAt'],
-            //     where: {
-            //         user_id: req.idUser
-            //     },
-            //     include: [{
-            //         association : 'post',
-            //         attributes: ['titulo','preparo','curtidas','createdAt'],
-            //         include: [{
-            //             association: 'owner',
-            //             attributes: ['nome','sobrenome'],
-            //         }]
-            //     }]
-            // });
+            const post = await PostsComplete.findAll({
+                limit,
+                offset,
+                attributes: ['post_id','createdAt'],
+            });
 
             await SearchPost.create({
-
+                user_id: req.idUser,
+                search: JSON.stringify(search)
             });
+
             return res.json(post);
             
         }catch(err){

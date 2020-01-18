@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { generateCrypt } = require('../helpers/crypt');
 
 module.exports = {
 
@@ -29,22 +30,12 @@ module.exports = {
         } 
     },
 
-    async updateUser (req, res) {
+    async updateUserSenha (req, res) {
         try{
-
-            const { nome, dataNasc, email, senha } = req.body;
+            const hashPassword = await generateCrypt(req.body.senha);
     
-            const hashPassword = null;
-    
-            if(!senha){
-                hashPassword = await generateCrypt(req.body.senha);
-            }
-    
-            const user = await User.update({
-                nome : nome,
-                email: email,
-                senha: hashPassword,
-                nascimento: dataNasc
+            await User.update({
+                senha: hashPassword
             }, {
                 where: {
                     id: req.idUser,
@@ -52,10 +43,35 @@ module.exports = {
                 }
             });
     
-            return res.json(user);
+            return res.json({ message: 'Dados atualizados!'});
         
         }catch(err){
             return res.status(400).send(err);
         } 
     },
+
+    async updateUser (req, res) {
+        try{
+
+            const { nome, sobrenome, email, nascimento } = req.body;
+    
+            await User.update({
+                nome,
+                sobrenome,
+                email,
+                nascimento
+            }, {
+                where: {
+                    id: req.idUser,
+                    registro: true
+                }
+            });
+    
+            return res.json({ message: 'Dados atualizados!'});
+        
+        }catch(err){
+            return res.status(400).send(err);
+        } 
+    },
+
 };
