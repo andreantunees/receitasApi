@@ -42,7 +42,7 @@ module.exports = {
             if(error) return res.status(400).send(error.details[0].message);
         
             const userExists = await existsUser(req.body);
-            if(userExists) return res.status(400).json({ message :'Email already exists'});
+            if(userExists) return res.status(400).json({ message :'Email ja existente'});
 
             const hashPassword = await generateCrypt(req.body.senha);
         

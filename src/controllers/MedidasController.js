@@ -4,34 +4,51 @@ const Op = require('sequelize').Op;
 module.exports = {
 
     async index (req,res){
-        const medida = await Medidas.findAll();
+        try{
 
-        return res.json(medida);
+            const medida = await Medidas.findAll();
+    
+            return res.json(medida);
+        
+        }catch(err){
+            return res.status(400).send(err);
+        } 
     },
 
     async store(req, res) {
-        const { nome, abrev } = req.body;
+        try{
 
-        const medida = await Medidas.create({ nome, abrev });
-
-        return res.json(medida);
+            const { nome, abrev } = req.body;
+    
+            const medida = await Medidas.create({ nome, abrev });
+    
+            return res.json(medida);
+        
+        }catch(err){
+            return res.status(400).send(err);
+        } 
     },
 
     async indexList (req, res){
+        try{
+
+            const { med } = req.params;
+    
+            const query = `%${med}%`
+    
+            const medida = await Medidas.findAll({
+                attributes: ['nome','abrev'],
+                limit: process.env.LIMIT_DROPDOWN,
+                where: {
+                    abrev : { [Op.iLike]: query },
+                    registro: true
+                },
+            });
+    
+            return res.json(medida);
         
-        const { med } = req.params;
-
-        const query = `%${med}%`
-
-        const medida = await Medidas.findAll({
-            attributes: ['nome','abrev'],
-            limit: process.env.LIMIT_DROPDOWN,
-            where: {
-                abrev : { [Op.iLike]: query },
-                registro: true
-            },
-        });
-
-        return res.json(medida);
+        }catch(err){
+            return res.status(400).send(err);
+        } 
     },
 };

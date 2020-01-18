@@ -3,13 +3,13 @@ const User = require('../models/User');
 const PostsComplete = require('../models/PostsComplete');
 const sequelize = require('sequelize');
 const PostLikeUser = require('../models/PostsLikeUser');
-
+const SearchPost = require('../models/SearchPost;')
 
 module.exports = {
 
     async store(req, res) {
         try{
-            const { user_id } = req.params;
+            const user_id = req.idUser
             const {  titulo, preparo, ingredients } = req.body;
     
             const user = await User.findByPk(user_id);
@@ -39,27 +39,33 @@ module.exports = {
             return res.json({ message : "Post inserido com sucesso!" });
 
         }catch(err){
-            return res.status(400).json({ message : "Ocorreu erro inexperado!"})
+            return res.status(400).send(err);
         } 
     },
 
     async index(req, res){
-
-        const { post_id } = req.params;
-
-        const post = await PostsComplete.findAll({
-            attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
-            where: {
-                post_id
-            }
-        });
-
-        return res.json(post);
+        try{
+            
+            const { post_id } = req.params;
+    
+            const post = await PostsComplete.findAll({
+                attributes: ['ingrediente_desc','medida_desc','qtd_ingred'],
+                where: {
+                    post_id,
+                    registro: true
+                }
+            });
+    
+            return res.json(post);
+        
+        }catch(err){
+            return res.status(400).send(err);
+        } 
     },
 
     async like (req,res) {
         
-        const { user_id } = req.params;
+        const user_id  = req.idUser;
         const { post_id } = req.body;
 
         const user = await User.findByPk(user_id);
@@ -71,7 +77,10 @@ module.exports = {
         await Post.update({ 
             curtidas: sequelize.literal('curtidas + 1') 
         },{ 
-            where: { id: post_id },
+            where: { 
+                id: post_id,
+                registro: true
+            },
         });
 
         await PostLikeUser.create({
@@ -83,65 +92,95 @@ module.exports = {
     },
 
     async indexByLike (req, res) {
-        const { user_id, page } = req.params;
+        try{
 
-        const pageSize = process.env.LIMIT_PAGE;
-
-        const offset = page * pageSize;
-        const limit = pageSize;
-
-        const post = await PostLikeUser.findAll({
-            limit,
-            offset,
-            attributes: ['post_id','createdAt'],
-            where: {
-                user_id
-            },
-            include: [{
-                association : 'post',
-                attributes: ['titulo','preparo','curtidas','createdAt'],
+            const { page } = req.params;
+    
+            const pageSize = process.env.LIMIT_PAGE;
+    
+            const offset = page * pageSize;
+            const limit = pageSize;
+    
+            const post = await PostLikeUser.findAll({
+                limit,
+                offset,
+                attributes: ['post_id','createdAt'],
+                where: {
+                    user_id: req.idUser,
+                    registro: true
+                },
                 include: [{
-                    association: 'owner',
-                    attributes: ['nome','sobrenome'],
+                    association : 'post',
+                    attributes: ['titulo','preparo','curtidas','createdAt'],
+                    include: [{
+                        association: 'owner',
+                        attributes: ['nome','sobrenome'],
+                    }]
                 }]
-            }]
-        });
+            });
+    
+            return res.json(post);
+        }catch(err){
 
-        return res.json(post);
+        }
     },
 
     async remove (req, res){
-        // const { user_id } = req.params;
-        // const { post_id } = req.body;
+        try{
 
-        
+            const { post_id } = req.body;
+
+            await Post.update({ 
+                registro: false 
+            },{ 
+                where: { 
+                    id: post_id,
+                    user_id : req.idUser,
+                    registro: true
+                },
+            });
+    
+            return res.json({ message: 'Operacao executada com sucesso.'});
+
+        }catch(err){
+            return res.status(400).send(err);
+        }
     },
 
     async indexList (req, res){
-        //listar post de acordo com os ingredientes/medida/quantidade
+        try{
+            //listar post de acordo com os ingredientes/medida/quantidade -- inserir na tabela de consulta
 
-        const { user_id, page } = req.params;
+            const { page } = req.params;
 
-        const offset = page * pageSize;
-        const limit = pageSize;
+            const offset = page * pageSize;
+            const limit = pageSize;
 
-        // const post = await PostLikeUser.findAll({
-        //     limit,
-        //     offset,
-        //     attributes: ['post_id','createdAt'],
-        //     where: {
-        //         user_id
-        //     },
-        //     include: [{
-        //         association : 'post',
-        //         attributes: ['titulo','preparo','curtidas','createdAt'],
-        //         include: [{
-        //             association: 'owner',
-        //             attributes: ['nome','sobrenome'],
-        //         }]
-        //     }]
-        // });
+            // const post = await PostsComplete.findAll({
+            //     limit,
+            //     offset,
+            //     attributes: ['post_id','createdAt'],
+            //     where: {
+            //         user_id: req.idUser
+            //     },
+            //     include: [{
+            //         association : 'post',
+            //         attributes: ['titulo','preparo','curtidas','createdAt'],
+            //         include: [{
+            //             association: 'owner',
+            //             attributes: ['nome','sobrenome'],
+            //         }]
+            //     }]
+            // });
 
-        return res.json(post);
+            await SearchPost.create({
+
+            });
+            return res.json(post);
+            
+        }catch(err){
+            return res.status(400).send(err);
+        }
+        
     },
 };
