@@ -9,6 +9,7 @@ class Posts extends Model {
             registro: DataTypes.BOOLEAN,
         }, {
             sequelize,
+            tableName: 'Posts',
             freezeTableName: true
         })
     }

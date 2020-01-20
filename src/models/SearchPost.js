@@ -7,6 +7,7 @@ class SearchPost extends Model {
             registro: DataTypes.BOOLEAN,
         }, {
             sequelize,
+            schema: 'public',
             tableName: 'Search_Post'
         })
     }

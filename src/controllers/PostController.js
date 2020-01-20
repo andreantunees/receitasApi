@@ -4,6 +4,7 @@ const PostsComplete = require('../models/PostsComplete');
 const sequelize = require('sequelize');
 const PostLikeUser = require('../models/PostsLikeUser');
 const SearchPost = require('../models/SearchPost');
+const db = require('../database/index');
 
 module.exports = {
 
@@ -64,31 +65,36 @@ module.exports = {
     },
 
     async like (req,res) {
-        
-        const user_id  = req.idUser;
-        const { post_id } = req.body;
+        try{
 
-        const user = await User.findByPk(user_id);
-        if(!user) return res.status(400).json({ message: 'Usuario nao encontrado!'});
+            const user_id  = req.idUser;
+            const { post_id } = req.body;
 
-        const likeExists = await PostLikeUser.findOne({ where: { user_id, post_id }});
-        if(likeExists) return res.status(400).json({ message: 'Like ja inserido.'})
+            const user = await User.findByPk(user_id);
+            if(!user) return res.status(400).json({ message: 'Usuario nao encontrado!'});
 
-        await Post.update({ 
-            curtidas: sequelize.literal('curtidas + 1') 
-        },{ 
-            where: { 
-                id: post_id,
-                registro: true
-            },
-        });
+            const likeExists = await PostLikeUser.findOne({ where: { user_id, post_id }});
+            if(likeExists) return res.status(400).json({ message: 'Like ja inserido.'})
 
-        await PostLikeUser.create({
-            post_id,
-            user_id
-        });
+            await Post.update({ 
+                curtidas: sequelize.literal('curtidas + 1') 
+            },{ 
+                where: { 
+                    id: post_id,
+                    registro: true
+                },
+            });
 
-        return res.json({ sucess: "Like inserido com sucesso!" });
+            await PostLikeUser.create({
+                post_id,
+                user_id
+            });
+
+            return res.json({ sucess: "Like inserido com sucesso!" });
+
+        }catch(err){
+            return res.status(400).send(err);
+        } 
     },
 
     async indexByLike (req, res) {
@@ -121,7 +127,7 @@ module.exports = {
     
             return res.json(post);
         }catch(err){
-
+            return res.status(400).send(err);
         }
     },
 
@@ -148,29 +154,63 @@ module.exports = {
     },
 
     async indexList (req, res){
-        try{
-            //listar post de acordo com os ingredientes/medida/quantidade -- 
-
+       
             const { page } = req.params;
+            const { items } = req.body;
 
-            const { search } = req.body;
+            const pageSize = 2;
 
             const offset = page * pageSize;
             const limit = pageSize;
 
-            const post = await PostsComplete.findAll({
-                limit,
-                offset,
-                attributes: ['post_id','createdAt'],
+            var consulta =  `Select "p"."id", (select "u"."nome" || ' ' ||"u"."sobrenome"
+                                                from  "User" as "u"
+                                                where  "u"."id" = "p"."user_id") as "Nome",
+                                    "p"."titulo", "p"."preparo",
+                                    "p"."curtidas", "p"."created_at"
+                            from "Posts" as "p"
+                            inner join "Posts_Ingredients_Medidas" as "pcomp"
+                                on "pcomp"."post_id" = "p"."id"
+                            where 1=1 `;
+
+            items.forEach(data => { // high
+                consulta = consulta.concat(`and "pcomp"."ingredients_id" = ${data.id_ingrediente} 
+                                            and "pcomp"."medidas_id" = ${data.id_medida}
+                                            and "pcomp"."qtd_ingred" = ${data.qtd}  `)
+            });
+
+            consulta = consulta.concat(`union 
+                                        Select  "p"."id", (select "u"."nome" || ' ' || "u"."sobrenome"
+                                                             from  "User" as "u"
+                                                            where  "u"."id" = "p"."user_id") as "Nome",
+                                                "p"."titulo", "p"."preparo",
+                                                "p"."curtidas", "p"."created_at"
+                                        from "Posts" as "p"
+                                        inner join "Posts_Ingredients_Medidas" as "pcomp"
+                                            on "pcomp"."post_id" = "p"."id"
+                                        where 1=1 `);
+
+            items.forEach(data => { // mid
+                consulta = consulta.concat(`and "pcomp"."ingredients_id" = ${data.id_ingrediente} 
+                                            or ("pcomp"."medidas_id" = ${data.id_medida}
+                                            or "pcomp"."qtd_ingred" = ${data.qtd}  ) `)
+            });
+
+            consulta = consulta.concat(` OFFSET ${offset} LIMIT ${limit} `)
+            
+            const post = await db.sequelize.query(
+                consulta,{
+                model: Post,
+                type: db.sequelize.QueryTypes.SELECT
             });
 
             await SearchPost.create({
                 user_id: req.idUser,
-                search: JSON.stringify(search)
+                search: JSON.stringify(items)
             });
 
             return res.json(post);
-            
+        try{
         }catch(err){
             return res.status(400).send(err);
         }

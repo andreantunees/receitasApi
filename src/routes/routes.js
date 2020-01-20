@@ -23,7 +23,7 @@ routes.put('/users/geral', auth, UserController.updateUser);
 //posts
 routes.post('/posts', auth, PostsController.store);
 routes.get('/posts/:post_id', auth, PostsController.index);
-routes.get('/posts/like/history/:page', auth, PostsController.indexByLike);
+routes.get('/posts/like/historico/:page', auth, PostsController.indexByLike);
 routes.put('/posts/delete/:post_id', auth, PostsController.remove);
 routes.post('/posts/like', auth, PostsController.like);
 routes.post('/posts/check/:page', auth, PostsController.indexList);

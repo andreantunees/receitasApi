@@ -12,6 +12,8 @@ const SearchPost = require('../models/SearchPost');
 
 const connection = new Sequelize(dbConfig);
 
+const db = {};
+
 User.init(connection);
 Posts.init(connection);
 Medidas.init(connection);
@@ -30,4 +32,7 @@ PostsLikeUser.associate(connection.models);
 BlackList.associate(connection.models);
 SearchPost.associate(connection.models);
 
-module.exports = connection;
+db.Sequelize = Sequelize;
+db.sequelize = connection;
+
+module.exports = db;
