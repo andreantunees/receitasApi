@@ -163,9 +163,11 @@ module.exports = {
             const offset = page * pageSize;
             const limit = pageSize;
 
-            var consulta =  `Select "p"."id", (select "u"."nome" || ' ' ||"u"."sobrenome"
-                                                from  "User" as "u"
-                                                where  "u"."id" = "p"."user_id") as "Nome",
+            var consulta =  `Select "geral".*, (Select "u"."nome" || ' ' || "u"."sobrenome"
+                                                from   "User" as "u"
+                                                where  "u"."id" = "geral"."user_id") as "Nome",
+                                    (select string_agg("))
+                             from (Select  "p"."id", "p"."user_id",
                                     "p"."titulo", "p"."preparo",
                                     "p"."curtidas", "p"."created_at"
                             from "Posts" as "p"
@@ -180,9 +182,7 @@ module.exports = {
             });
 
             consulta = consulta.concat(`union 
-                                        Select  "p"."id", (select "u"."nome" || ' ' || "u"."sobrenome"
-                                                             from  "User" as "u"
-                                                            where  "u"."id" = "p"."user_id") as "Nome",
+                                        Select  "p"."id", "p"."user_id",
                                                 "p"."titulo", "p"."preparo",
                                                 "p"."curtidas", "p"."created_at"
                                         from "Posts" as "p"
@@ -190,11 +190,20 @@ module.exports = {
                                             on "pcomp"."post_id" = "p"."id"
                                         where 1=1 `);
 
-            items.forEach(data => { // mid
-                consulta = consulta.concat(`and "pcomp"."ingredients_id" = ${data.id_ingrediente} 
-                                            or ("pcomp"."medidas_id" = ${data.id_medida}
-                                            or "pcomp"."qtd_ingred" = ${data.qtd}  ) `)
+            var ingredients = '';
+
+            items.forEach((val, key, arr) => { // low
+                if(Object.is(arr.length - 1, key))
+                    ingredients = ingredients.concat(`${val.id_ingrediente}`);
+                else
+                    ingredients = ingredients.concat(`${val.id_ingrediente},`);
             });
+
+            consulta = consulta.concat(`and "pcomp"."ingredients_id" in (${ingredients})
+                                        ) as "geral"
+                                        Group by "geral"."id", "geral"."user_id", 
+                                                 "geral"."titulo", "geral"."preparo",
+                                                 "geral"."curtidas", "geral"."created_at"`);
 
             consulta = consulta.concat(` OFFSET ${offset} LIMIT ${limit} `)
             
